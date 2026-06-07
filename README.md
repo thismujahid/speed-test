@@ -52,7 +52,7 @@ Testing... ⚡
 
 ```
 
-**Upon completion** (the indicator is completely wiped and replaced clean):
+**Upon completion** the indicator is completely wiped and replaced clean:
 
 ```text
 Ping: 9 ms
