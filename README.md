@@ -56,8 +56,8 @@ Testing... ⚡
 
 ```text
 Ping: 9 ms
-Download: 15 Mbps
-Upload: 1 Mbps
+Download: 150 Mbps
+Upload: 10 Mbps
 
 ```
 
