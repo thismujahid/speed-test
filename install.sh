@@ -15,21 +15,25 @@ echo -e "\e[34m[*] Starting tnet installation...\e[0m"
 # 1. التأكد من وجود jq وتثبيته
 if ! command -v jq &> /dev/null; then
     echo -e "\e[33m[+] Installing dependency: jq...\e[0m"
-    sudo apt-get update -y && sudo apt-get install jq -y &> /dev/null
+    sudo apt-get update -y && sudo apt-get install jq -y
+    
+    # فحص صارم: هل jq اتثبت بنجاح؟
+    if ! command -v jq &> /dev/null; then
+        echo -e "\e[31m[!] Error: Failed to install 'jq'. Installation aborted.\e[0m"
+        exit 1
+    fi
 fi
 
 # 2. التأكد من وجود speedtest وتثبيته بالطريقة الرسمية الذكية
 if ! command -v speedtest &> /dev/null; then
     echo -e "\e[33m[+] Installing dependency: Speedtest CLI...\e[0m"
-    sudo apt-get install curl gnupg apt-transport-https lsb-release -y &> /dev/null
+    sudo apt-get install curl gnupg apt-transport-https lsb-release -y
     
-    # [حل المشكلة] تحديد اسم النسخة بدقة (Fallback to Ubuntu Codename if custom distro)
+    # تحديد اسم النسخة بدقة (Fallback to Ubuntu Codename if custom distro)
     CODENAME=$(lsb_release -cs)
     if [ "$CODENAME" == "resolute" ] || ! curl -sI "https://packagecloud.io/ookla/speedtest-cli/ubuntu/dists/$CODENAME/Release" | grep -q "200 OK"; then
-        # لو الاسم مش موجود على سيرفر Ookla، هنقيب الـ UBUNTU_CODENAME الأصلي من السيستم
         if [ -f /etc/os-release ]; then
             CODENAME=$(grep -oP 'UBUNTU_CODENAME=\K\w+' /etc/os-release 2>/dev/null)
-            # لو لسه فاضي (زي في دبيان الصافي مثلاً) نخليه jammy أو noble كإجراء احتياطي مستقر
             [ -z "$CODENAME" ] && CODENAME=$(grep -oP 'VERSION_CODENAME=\K\w+' /etc/os-release 2>/dev/null)
         fi
         [ -z "$CODENAME" ] && CODENAME="jammy"
@@ -39,10 +43,17 @@ if ! command -v speedtest &> /dev/null; then
     sudo rm -f /etc/apt/sources.list.d/speedtest.list /etc/apt/sources.list.d/ookla_speedtest-cli.list
 
     # إضافة المفتاح والمستودع بالاسم الصحيح المدعوم
-    curl -fsSL https://packagecloud.io/ookla/speedtest-cli/gpgkey | sudo gpg --dearmor --yes -o /etc/apt/keyrings/ookla_speedtest-cli-archive-keyring.gpg &> /dev/null
-    echo "deb [signed-by=/etc/apt/keyrings/ookla_speedtest-cli-archive-keyring.gpg] https://packagecloud.io/ookla/speedtest-cli/ubuntu/ $CODENAME main" | sudo tee /etc/apt/sources.list.d/ookla_speedtest-cli.list &> /dev/null
+    curl -fsSL https://packagecloud.io/ookla/speedtest-cli/gpgkey | sudo gpg --dearmor --yes -o /etc/apt/keyrings/ookla_speedtest-cli-archive-keyring.gpg
+    echo "deb [signed-by=/etc/apt/keyrings/ookla_speedtest-cli-archive-keyring.gpg] https://packagecloud.io/ookla/speedtest-cli/ubuntu/ $CODENAME main" | sudo tee /etc/apt/sources.list.d/ookla_speedtest-cli.list
     
-    sudo apt-get update -y && sudo apt-get install speedtest -y &> /dev/null
+    # تحديث وتثبيت الـ speedtest
+    sudo apt-get update -y && sudo apt-get install speedtest -y
+    
+    # فحص صارم: هل speedtest اتثبت بنجاح؟
+    if ! command -v speedtest &> /dev/null; then
+        echo -e "\e[31m[!] Error: Failed to install 'speedtest-cli'. Installation aborted.\e[0m"
+        exit 1
+    fi
 fi
 
 # 3. كتابة سكريبت التشغيل جوه الـ /usr/local/bin/tnet مع دعم خيار الحذف
@@ -77,7 +88,7 @@ fi
 echo "$result" | jq -r '
   "\u001b[32mPing:\u001b[0m \(.ping.latency | round) ms",
   "\u001b[32mDownload:\u001b[0m \((.download.bandwidth / 125000) | round) Mbps",
-  "\u001b[32mUpload:\u001b[0m \((.upload.bandwidth / 125000) | round) Mbps"
+  "\u001b[32mUpload:\u001b[0m \((.download.bandwidth / 125000) | round) Mbps"
 '
 EOF
 
