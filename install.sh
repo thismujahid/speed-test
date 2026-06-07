@@ -1,5 +1,5 @@
 #!/bin/bash
-
+#test
 INSTALL_DIR="/usr/local/bin"
 TARGET_FILE="$INSTALL_DIR/tnet"
 
