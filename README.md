@@ -22,7 +22,7 @@
 Open your terminal and run the following command to download and install `tnet` automatically:
 
 ```bash
-curl -sSL [https://raw.githubusercontent.com/thismujahid/speed-test/main/install.sh](https://raw.githubusercontent.com/thismujahid/speed-test/main/install.sh) | bash
+curl -sSL https://raw.githubusercontent.com/thismujahid/speed-test/main/install.sh | bash
 
 ```
 
